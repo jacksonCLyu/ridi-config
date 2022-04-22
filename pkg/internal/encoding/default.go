@@ -1,8 +1,8 @@
 package encoding
 
 import (
-	"github.com/jacksonCLyu/ridi-config/pkg/config/encoding/toml"
-	"github.com/jacksonCLyu/ridi-config/pkg/config/encoding/yml"
+	"github.com/jacksonCLyu/ridi-config/pkg/internal/encoding/toml"
+	"github.com/jacksonCLyu/ridi-config/pkg/internal/encoding/yml"
 	"github.com/jacksonCLyu/ridi-faces/pkg/configer"
 )
 

@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -11,11 +12,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jacksonCLyu/ridi-config/pkg/config/encoding"
-	"github.com/jacksonCLyu/ridi-config/pkg/config/filesystem"
-	"github.com/jacksonCLyu/ridi-config/pkg/config/strategy"
+	"github.com/jacksonCLyu/ridi-config/pkg/internal/encoding"
+	"github.com/jacksonCLyu/ridi-config/pkg/internal/filesystem"
+	"github.com/jacksonCLyu/ridi-config/pkg/internal/strategy"
 	"github.com/jacksonCLyu/ridi-faces/pkg/configer"
 	"github.com/jacksonCLyu/ridi-faces/pkg/env"
+	"github.com/jacksonCLyu/ridi-utils/utils/assignutil"
+	"github.com/jacksonCLyu/ridi-utils/utils/rescueutil"
 )
 
 // Init init config
@@ -107,6 +110,8 @@ func NewConfig(opts ...Option) (configer.Configurable, error) {
 		fileSystem:     options.fileSystem,
 		configMap:      make(map[string]configer.Field),
 	}
+	// give `this` to reloading strategy
+	c.ReloadStrategy.SetConfiguration(c)
 	// auto codec
 	ext := filepath.Ext(c.FilePath)
 	ext = ext[1:]
@@ -174,6 +179,7 @@ func (c *config) LoadRemote(url *url.URL) error {
 }
 
 func (c *config) LoadStream(r io.Reader) error {
+	// require wirte lock
 	c.Lock()
 	defer c.Unlock()
 	c.configMap = make(map[string]configer.Field)
@@ -198,8 +204,6 @@ func (c *config) Save(path string) error {
 }
 
 func (c *config) SaveStream(writer io.Writer) error {
-	c.Lock()
-	defer c.Unlock()
 	if all, err := c.encoder.Encode(c.configMap); err != nil {
 		return err
 	} else {
@@ -217,8 +221,6 @@ func (c *config) SaveRemote(url *url.URL) error {
 }
 
 func (c *config) GetFileName() string {
-	c.RLock()
-	defer c.RUnlock()
 	base := filepath.Base(c.FilePath)
 	if strings.HasSuffix(base, filepath.Ext(base)) {
 		return base[:len(base)-len(filepath.Ext(base))]
@@ -227,57 +229,40 @@ func (c *config) GetFileName() string {
 }
 
 func (c *config) GetFilePath() string {
-	c.RLock()
-	defer c.RUnlock()
 	return c.FilePath
 }
 
 func (c *config) GetURL() *url.URL {
-	c.RLock()
-	defer c.RUnlock()
 	return c.SourceURL
 }
 
 func (c *config) SetURL(url *url.URL) {
-	c.Lock()
-	defer c.Unlock()
 	c.SourceURL = url
 }
 
 func (c *config) Merge(config configer.FileConfiguration) error {
-	c.Lock()
-	defer c.Unlock()
 	// TODO merge implementation
 	return nil
 }
 
 func (c *config) Sync() error {
-	c.Lock()
-	defer c.Unlock()
 	// TODO sync implementation
 	return nil
 }
 
 func (c *config) Watch(paths ...string) error {
-	c.Lock()
-	defer c.Unlock()
 	// TODO watch implementation
 	return nil
 }
 
-func (c *config) Reload() error {
-	c.RLock()
-	defer c.RUnlock()
-	var needReload bool
-	var err error
-	if needReload, err = c.ReloadStrategy.NeedReloading(); err != nil {
-		return err
-	}
-	if !needReload {
+func (c *config) ReloadIfNeeded() error {
+	if !c.NeedReload() {
 		return nil
 	}
-	c.Lock()
-	defer c.Unlock()
+	return c.Reload()
+}
+
+func (c *config) Reload() error {
 	reader, err := c.fileSystem.GetReader(c.FilePath)
 	if err != nil {
 		return err
@@ -285,27 +270,33 @@ func (c *config) Reload() error {
 	return c.LoadStream(reader)
 }
 
-func (c *config) GetReloadStrategy() configer.ReloadingStrategy {
+func (c *config) NeedReload() (needReloading bool) {
+	defer rescueutil.Recover(func(err any) {
+		fmt.Println(err)
+		needReloading = false
+	})
 	c.RLock()
 	defer c.RUnlock()
+	needReloading = assignutil.Assign(c.ReloadStrategy.NeedReloading())
+	return
+}
+
+func (c *config) GetReloadStrategy() configer.ReloadingStrategy {
 	return c.ReloadStrategy
 }
 
 func (c *config) SetReloadStrategy(strategy configer.ReloadingStrategy) {
-	c.Lock()
-	defer c.Unlock()
 	c.ReloadStrategy = strategy
 }
 
 func (c *config) ContainsKey(key string) bool {
-	c.RLock()
-	defer c.RUnlock()
+	if err := c.ReloadIfNeeded(); err != nil {
+		return false
+	}
 	return containsKey(c.configMap, key)
 }
 
 func (c *config) GetString(key string) (string, error) {
-	c.RLock()
-	defer c.RUnlock()
 	field, err := c.get(key)
 	if err != nil {
 		return "", err
@@ -318,8 +309,7 @@ func (c *config) GetString(key string) (string, error) {
 }
 
 func (c *config) GetInt(key string) (int, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return 0, err
@@ -331,8 +321,7 @@ func (c *config) GetInt(key string) (int, error) {
 }
 
 func (c *config) GetBool(key string) (bool, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return false, err
@@ -344,8 +333,7 @@ func (c *config) GetBool(key string) (bool, error) {
 }
 
 func (c *config) GetFloat64(key string) (float64, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return 0.0, err
@@ -357,8 +345,7 @@ func (c *config) GetFloat64(key string) (float64, error) {
 }
 
 func (c *config) GetStringSlice(key string) ([]string, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return []string{}, err
@@ -370,8 +357,7 @@ func (c *config) GetStringSlice(key string) ([]string, error) {
 }
 
 func (c *config) GetIntSlice(key string) ([]int, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return []int{}, err
@@ -383,8 +369,7 @@ func (c *config) GetIntSlice(key string) ([]int, error) {
 }
 
 func (c *config) GetBoolSlice(key string) ([]bool, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return []bool{}, err
@@ -396,8 +381,7 @@ func (c *config) GetBoolSlice(key string) ([]bool, error) {
 }
 
 func (c *config) GetFloat64Slice(key string) ([]float64, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return []float64{}, err
@@ -409,8 +393,7 @@ func (c *config) GetFloat64Slice(key string) ([]float64, error) {
 }
 
 func (c *config) GetSection(key string) (configer.Configurable, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return nil, err
@@ -422,8 +405,7 @@ func (c *config) GetSection(key string) (configer.Configurable, error) {
 }
 
 func (c *config) GetInt32(key string) (int32, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return 0, err
@@ -436,8 +418,7 @@ func (c *config) GetInt32(key string) (int32, error) {
 }
 
 func (c *config) GetInt32Slice(key string) ([]int32, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return []int32{}, err
@@ -450,8 +431,7 @@ func (c *config) GetInt32Slice(key string) ([]int32, error) {
 }
 
 func (c *config) GetInt64(key string) (int64, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return 0, err
@@ -464,8 +444,7 @@ func (c *config) GetInt64(key string) (int64, error) {
 }
 
 func (c *config) GetInt64Slice(key string) ([]int64, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return []int64{}, err
@@ -478,8 +457,7 @@ func (c *config) GetInt64Slice(key string) ([]int64, error) {
 }
 
 func (c *config) GetUint(key string) (uint, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return 0, err
@@ -492,8 +470,7 @@ func (c *config) GetUint(key string) (uint, error) {
 }
 
 func (c *config) GetUintSlice(key string) ([]uint, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return []uint{}, err
@@ -506,8 +483,7 @@ func (c *config) GetUintSlice(key string) ([]uint, error) {
 }
 
 func (c *config) GetUint32(key string) (uint32, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return 0, err
@@ -520,8 +496,7 @@ func (c *config) GetUint32(key string) (uint32, error) {
 }
 
 func (c *config) GetUint32Slice(key string) ([]uint32, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return []uint32{}, err
@@ -534,8 +509,7 @@ func (c *config) GetUint32Slice(key string) ([]uint32, error) {
 }
 
 func (c *config) GetUint64(key string) (uint64, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return 0, err
@@ -548,8 +522,7 @@ func (c *config) GetUint64(key string) (uint64, error) {
 }
 
 func (c *config) GetUint64Slice(key string) ([]uint64, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return []uint64{}, err
@@ -562,8 +535,7 @@ func (c *config) GetUint64Slice(key string) ([]uint64, error) {
 }
 
 func (c *config) GetFloat32(key string) (float32, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return 0.0, err
@@ -576,8 +548,7 @@ func (c *config) GetFloat32(key string) (float32, error) {
 }
 
 func (c *config) GetFloat32Slice(key string) ([]float32, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return []float32{}, err
@@ -590,8 +561,7 @@ func (c *config) GetFloat32Slice(key string) ([]float32, error) {
 }
 
 func (c *config) GetDuration(key string) (time.Duration, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return 0, err
@@ -604,8 +574,7 @@ func (c *config) GetDuration(key string) (time.Duration, error) {
 }
 
 func (c *config) GetTime(key string) (time.Time, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return time.Now().Local(), err
@@ -618,8 +587,7 @@ func (c *config) GetTime(key string) (time.Time, error) {
 }
 
 func (c *config) Get(key string) (any, error) {
-	c.RLock()
-	defer c.RUnlock()
+
 	field, err := c.get(key)
 	if err != nil {
 		return nil, err
@@ -651,6 +619,11 @@ func containsKey(configMap map[string]configer.Field, key string) bool {
 
 // get This method acquires the lock by default
 func (c *config) get(key string) (configer.Field, error) {
+	if err := c.ReloadIfNeeded(); err != nil {
+		return configer.Field{}, err
+	}
+	c.RLock()
+	defer c.RUnlock()
 	return getRecursive(c.configMap, key)
 }
 

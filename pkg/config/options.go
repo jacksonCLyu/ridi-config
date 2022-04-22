@@ -3,7 +3,7 @@ package config
 import (
 	"net/url"
 
-	"github.com/jacksonCLyu/ridi-config/pkg/config/filesystem"
+	"github.com/jacksonCLyu/ridi-config/pkg/internal/filesystem"
 	"github.com/jacksonCLyu/ridi-faces/pkg/configer"
 )
 
