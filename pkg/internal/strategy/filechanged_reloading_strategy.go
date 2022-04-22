@@ -46,17 +46,17 @@ func NewFileChangedReloadingStrategy(opts ...FileChangedReloadingOption) confige
 }
 
 // SetConfiguration set configuration
-func (s FileChangedReloadingStrategy) SetConfiguration(configuration configer.FileConfiguration) {
+func (s *FileChangedReloadingStrategy) SetConfiguration(configuration configer.FileConfiguration) {
 	s.configuration = configuration
 }
 
 // Init init fileConfiguration
-func (s FileChangedReloadingStrategy) Init() error {
+func (s *FileChangedReloadingStrategy) Init() error {
 	return s.updateLastModified()
 }
 
 // NeedReloading judge if need reloading the configuration
-func (s FileChangedReloadingStrategy) NeedReloading() (bool, error) {
+func (s *FileChangedReloadingStrategy) NeedReloading() (bool, error) {
 	if !s.reloading {
 		now := time.Now().Local().UnixMilli()
 		if now > s.lastChecked.Milliseconds()+s.triggerInterval.Milliseconds() {
@@ -71,11 +71,11 @@ func (s FileChangedReloadingStrategy) NeedReloading() (bool, error) {
 }
 
 // ReloadingPerformed the callback of reloading configuration performed
-func (s FileChangedReloadingStrategy) ReloadingPerformed() error {
+func (s *FileChangedReloadingStrategy) ReloadingPerformed() error {
 	return s.updateLastModified()
 }
 
-func (s FileChangedReloadingStrategy) updateLastModified() error {
+func (s *FileChangedReloadingStrategy) updateLastModified() error {
 	defer func() {
 		s.reloading = false
 	}()
@@ -95,14 +95,14 @@ func (s FileChangedReloadingStrategy) updateLastModified() error {
 	return gErr
 }
 
-func (s FileChangedReloadingStrategy) getFile() (*os.File, error) {
+func (s *FileChangedReloadingStrategy) getFile() (*os.File, error) {
 	if s.configuration.GetURL() != nil {
 		return s.getFileFromURL()
 	}
 	return nil, errors.New("file configuration doesn't have `URL` property")
 }
 
-func (s FileChangedReloadingStrategy) getFileFromURL() (*os.File, error) {
+func (s *FileChangedReloadingStrategy) getFileFromURL() (*os.File, error) {
 	url, err := fileutil.GetFileFromURL(s.configuration.GetURL())
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (s FileChangedReloadingStrategy) getFileFromURL() (*os.File, error) {
 	return url, err
 }
 
-func (s FileChangedReloadingStrategy) hasChanged() (bool, error) {
+func (s *FileChangedReloadingStrategy) hasChanged() (bool, error) {
 	var file *os.File
 	var fileInfo os.FileInfo
 	var gErr error

@@ -7,6 +7,7 @@ type EncType string
 const (
 	Toml EncType = "toml"
 	Yml  EncType = "yml"
+	Yaml EncType = "yaml"
 )
 
 func (e EncType) String() string {
@@ -19,6 +20,7 @@ var SupportSet = make(map[EncType]configer.Codec)
 func Init() {
 	SupportSet[Toml] = &tomlCodec{}
 	SupportSet[Yml] = &ymlCodec{}
+	SupportSet[Yaml] = &ymlCodec{}
 }
 
 // IsSupport check if support
