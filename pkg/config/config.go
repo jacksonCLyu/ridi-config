@@ -12,34 +12,34 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jacksonCLyu/ridi-config/pkg/internal/encoding"
-	"github.com/jacksonCLyu/ridi-config/pkg/internal/filesystem"
-	"github.com/jacksonCLyu/ridi-config/pkg/internal/strategy"
 	"github.com/jacksonCLyu/ridi-faces/pkg/configer"
 	"github.com/jacksonCLyu/ridi-faces/pkg/env"
 	"github.com/jacksonCLyu/ridi-utils/utils/assignutil"
 	"github.com/jacksonCLyu/ridi-utils/utils/rescueutil"
+
+	"github.com/jacksonCLyu/ridi-config/pkg/internal/encoding"
+	"github.com/jacksonCLyu/ridi-config/pkg/internal/filesystem"
+	"github.com/jacksonCLyu/ridi-config/pkg/internal/strategy"
 )
 
 // Init init config
-func Init(opts ...InitOption) error {
-	var gErr error
-	once.Do(func() {
-		encoding.Init()
-		initOpts := &initOptions{}
-		for _, opt := range opts {
-			opt.initApply(initOpts)
-		}
-		if initOpts.configurable != nil {
-			DefaultConfig = initOpts.configurable
-			return
-		}
-		DefaultConfig, gErr = NewConfig()
-		if gErr != nil {
-			return
+func Init(opts ...InitOption) (gErr error) {
+	defer rescueutil.Recover(func(err any) {
+		if err != nil {
+			gErr = err.(error)
 		}
 	})
-	return gErr
+	encoding.Init()
+	initOpts := &initOptions{}
+	for _, opt := range opts {
+		opt.initApply(initOpts)
+	}
+	if initOpts.configurable != nil {
+		DefaultConfig = initOpts.configurable
+	} else {
+		DefaultConfig = assignutil.Assign(NewConfig())
+	}
+	return
 }
 
 // DefaultOptions returns the default configuration options.

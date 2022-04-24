@@ -1,13 +1,10 @@
 package config
 
 import (
-	"sync"
 	"time"
 
 	"github.com/jacksonCLyu/ridi-faces/pkg/configer"
 )
-
-var once sync.Once
 
 // DefaultConfig default config for devup
 var DefaultConfig configer.Configurable
