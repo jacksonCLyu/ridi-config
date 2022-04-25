@@ -3,7 +3,7 @@ module github.com/jacksonCLyu/ridi-config
 go 1.18
 
 require (
-	github.com/jacksonCLyu/ridi-faces v1.6.0
+	github.com/jacksonCLyu/ridi-faces v1.6.4
 	github.com/jacksonCLyu/ridi-utils v1.1.0
 	github.com/pelletier/go-toml/v2 v2.0.0-beta.8
 	github.com/pkg/errors v0.9.1

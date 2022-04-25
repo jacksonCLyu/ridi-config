@@ -338,7 +338,7 @@ func (c *config) GetFloat64(key string) (float64, error) {
 	if err != nil {
 		return 0.0, err
 	}
-	if field.Type != configer.FieldTypeFloat64 {
+	if field.Type != configer.FieldTypeFloat {
 		return 0.0, errors.New("field type is not float64")
 	}
 	return field.Value.(float64), nil
@@ -386,7 +386,7 @@ func (c *config) GetFloat64Slice(key string) ([]float64, error) {
 	if err != nil {
 		return []float64{}, err
 	}
-	if field.Type != configer.FieldTypeFloat64Slice {
+	if field.Type != configer.FieldTypeFloatSlice {
 		return []float64{}, errors.New("field type is not float64 slice")
 	}
 	return field.Value.([]float64), nil
@@ -410,7 +410,7 @@ func (c *config) GetInt32(key string) (int32, error) {
 	if err != nil {
 		return 0, err
 	}
-	t := configer.FieldTypeInt32
+	t := configer.FieldTypeInt
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
@@ -423,7 +423,7 @@ func (c *config) GetInt32Slice(key string) ([]int32, error) {
 	if err != nil {
 		return []int32{}, err
 	}
-	t := configer.FieldTypeInt32Slice
+	t := configer.FieldTypeIntSlice
 	if field.Type != t {
 		return []int32{}, errors.New("field type is not " + t.String())
 	}
@@ -436,7 +436,7 @@ func (c *config) GetInt64(key string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	t := configer.FieldTypeInt64
+	t := configer.FieldTypeInt
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
@@ -449,7 +449,7 @@ func (c *config) GetInt64Slice(key string) ([]int64, error) {
 	if err != nil {
 		return []int64{}, err
 	}
-	t := configer.FieldTypeInt64Slice
+	t := configer.FieldTypeIntSlice
 	if field.Type != t {
 		return []int64{}, errors.New("field type is not " + t.String())
 	}
@@ -488,7 +488,7 @@ func (c *config) GetUint32(key string) (uint32, error) {
 	if err != nil {
 		return 0, err
 	}
-	t := configer.FieldTypeUint32
+	t := configer.FieldTypeUint
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
@@ -501,7 +501,7 @@ func (c *config) GetUint32Slice(key string) ([]uint32, error) {
 	if err != nil {
 		return []uint32{}, err
 	}
-	t := configer.FieldTypeUint32Slice
+	t := configer.FieldTypeUintSlice
 	if field.Type != t {
 		return []uint32{}, errors.New("field type is not " + t.String())
 	}
@@ -514,7 +514,7 @@ func (c *config) GetUint64(key string) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	t := configer.FieldTypeUint64
+	t := configer.FieldTypeUint
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
@@ -527,7 +527,7 @@ func (c *config) GetUint64Slice(key string) ([]uint64, error) {
 	if err != nil {
 		return []uint64{}, err
 	}
-	t := configer.FieldTypeUint64Slice
+	t := configer.FieldTypeUintSlice
 	if field.Type != t {
 		return []uint64{}, errors.New("field type is not " + t.String())
 	}
@@ -540,7 +540,7 @@ func (c *config) GetFloat32(key string) (float32, error) {
 	if err != nil {
 		return 0.0, err
 	}
-	t := configer.FieldTypeFloat32
+	t := configer.FieldTypeFloat
 	if field.Type != t {
 		return 0.0, errors.New("field type is not " + t.String())
 	}
@@ -553,7 +553,7 @@ func (c *config) GetFloat32Slice(key string) ([]float32, error) {
 	if err != nil {
 		return []float32{}, err
 	}
-	t := configer.FieldTypeFloat32Slice
+	t := configer.FieldTypeFloatSlice
 	if field.Type != t {
 		return []float32{}, errors.New("field type is not " + t.String())
 	}
