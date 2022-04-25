@@ -414,7 +414,7 @@ func (c *config) GetInt32(key string) (int32, error) {
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
-	return field.Value.(int32), nil
+	return int32(field.Value.(int)), nil
 }
 
 func (c *config) GetInt32Slice(key string) ([]int32, error) {
@@ -427,7 +427,12 @@ func (c *config) GetInt32Slice(key string) ([]int32, error) {
 	if field.Type != t {
 		return []int32{}, errors.New("field type is not " + t.String())
 	}
-	return field.Value.([]int32), nil
+	v := field.Value.([]int)
+	r := make([]int32, len(v))
+	for i, v := range v {
+		r[i] = int32(v)
+	}
+	return r, nil
 }
 
 func (c *config) GetInt64(key string) (int64, error) {
@@ -440,7 +445,7 @@ func (c *config) GetInt64(key string) (int64, error) {
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
-	return field.Value.(int64), nil
+	return int64(field.Value.(int)), nil
 }
 
 func (c *config) GetInt64Slice(key string) ([]int64, error) {
@@ -453,7 +458,12 @@ func (c *config) GetInt64Slice(key string) ([]int64, error) {
 	if field.Type != t {
 		return []int64{}, errors.New("field type is not " + t.String())
 	}
-	return field.Value.([]int64), nil
+	v := field.Value.([]int)
+	r := make([]int64, len(v))
+	for i, v := range v {
+		r[i] = int64(v)
+	}
+	return r, nil
 }
 
 func (c *config) GetUint(key string) (uint, error) {
@@ -466,7 +476,7 @@ func (c *config) GetUint(key string) (uint, error) {
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
-	return field.Value.(uint), nil
+	return uint(field.Value.(int)), nil
 }
 
 func (c *config) GetUintSlice(key string) ([]uint, error) {
@@ -479,7 +489,12 @@ func (c *config) GetUintSlice(key string) ([]uint, error) {
 	if field.Type != t {
 		return []uint{}, errors.New("field type is not " + t.String())
 	}
-	return field.Value.([]uint), nil
+	v := field.Value.([]int)
+	r := make([]uint, len(v))
+	for i, v := range v {
+		r[i] = uint(v)
+	}
+	return r, nil
 }
 
 func (c *config) GetUint32(key string) (uint32, error) {
@@ -492,7 +507,7 @@ func (c *config) GetUint32(key string) (uint32, error) {
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
-	return field.Value.(uint32), nil
+	return uint32(field.Value.(int)), nil
 }
 
 func (c *config) GetUint32Slice(key string) ([]uint32, error) {
@@ -505,7 +520,12 @@ func (c *config) GetUint32Slice(key string) ([]uint32, error) {
 	if field.Type != t {
 		return []uint32{}, errors.New("field type is not " + t.String())
 	}
-	return field.Value.([]uint32), nil
+	v := field.Value.([]int)
+	r := make([]uint32, len(v))
+	for i, v := range v {
+		r[i] = uint32(v)
+	}
+	return r, nil
 }
 
 func (c *config) GetUint64(key string) (uint64, error) {
@@ -518,7 +538,7 @@ func (c *config) GetUint64(key string) (uint64, error) {
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
-	return field.Value.(uint64), nil
+	return uint64(field.Value.(int)), nil
 }
 
 func (c *config) GetUint64Slice(key string) ([]uint64, error) {
@@ -531,7 +551,12 @@ func (c *config) GetUint64Slice(key string) ([]uint64, error) {
 	if field.Type != t {
 		return []uint64{}, errors.New("field type is not " + t.String())
 	}
-	return field.Value.([]uint64), nil
+	v := field.Value.([]int)
+	r := make([]uint64, len(v))
+	for i, v := range v {
+		r[i] = uint64(v)
+	}
+	return r, nil
 }
 
 func (c *config) GetFloat32(key string) (float32, error) {
