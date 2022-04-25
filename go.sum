@@ -141,6 +141,10 @@ github.com/jacksonCLyu/ridi-faces v1.6.3 h1:rfWiInaIlvi/CgeBB64hsVedp77eL28S++/P
 github.com/jacksonCLyu/ridi-faces v1.6.3/go.mod h1:JEO+0FKa+9EBEcRJ1tfctyAn2wkUrlph/kI6yx4/XRE=
 github.com/jacksonCLyu/ridi-faces v1.6.4 h1:0O25VAocKoxWBpVq6w9X22V8+LTUNAyvYF5ZRNCN3gk=
 github.com/jacksonCLyu/ridi-faces v1.6.4/go.mod h1:JEO+0FKa+9EBEcRJ1tfctyAn2wkUrlph/kI6yx4/XRE=
+github.com/jacksonCLyu/ridi-faces v1.6.6 h1:6XRDqZa2vnT41h3M2ckK9ua3dZDkOtWcGMWiRP96RYQ=
+github.com/jacksonCLyu/ridi-faces v1.6.6/go.mod h1:JEO+0FKa+9EBEcRJ1tfctyAn2wkUrlph/kI6yx4/XRE=
+github.com/jacksonCLyu/ridi-faces v1.6.7 h1:RmfKvza0HB4ZLaiDvwCtBvkX5YsFKB1dUmVzPRpvF5A=
+github.com/jacksonCLyu/ridi-faces v1.6.7/go.mod h1:JEO+0FKa+9EBEcRJ1tfctyAn2wkUrlph/kI6yx4/XRE=
 github.com/jacksonCLyu/ridi-utils v1.0.0 h1:FZkSRvKAqakZ/4174WZuOQuWzJQT09l0HP/3BoRnbTQ=
 github.com/jacksonCLyu/ridi-utils v1.0.0/go.mod h1:qV0O4YOJm/HyKDBwJ/EVQrp52QMeTcRCT/4DI9nux+Y=
 github.com/jacksonCLyu/ridi-utils v1.1.0 h1:KOv7N8K6Vkpz5+emLo04rQm6BhsARcZ3D1XatlgJTqM=

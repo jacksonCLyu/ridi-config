@@ -462,7 +462,7 @@ func (c *config) GetUint(key string) (uint, error) {
 	if err != nil {
 		return 0, err
 	}
-	t := configer.FieldTypeUint
+	t := configer.FieldTypeInt
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
@@ -475,7 +475,7 @@ func (c *config) GetUintSlice(key string) ([]uint, error) {
 	if err != nil {
 		return []uint{}, err
 	}
-	t := configer.FieldTypeUintSlice
+	t := configer.FieldTypeIntSlice
 	if field.Type != t {
 		return []uint{}, errors.New("field type is not " + t.String())
 	}
@@ -488,7 +488,7 @@ func (c *config) GetUint32(key string) (uint32, error) {
 	if err != nil {
 		return 0, err
 	}
-	t := configer.FieldTypeUint
+	t := configer.FieldTypeInt
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
@@ -501,7 +501,7 @@ func (c *config) GetUint32Slice(key string) ([]uint32, error) {
 	if err != nil {
 		return []uint32{}, err
 	}
-	t := configer.FieldTypeUintSlice
+	t := configer.FieldTypeIntSlice
 	if field.Type != t {
 		return []uint32{}, errors.New("field type is not " + t.String())
 	}
@@ -514,7 +514,7 @@ func (c *config) GetUint64(key string) (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	t := configer.FieldTypeUint
+	t := configer.FieldTypeInt
 	if field.Type != t {
 		return 0, errors.New("field type is not " + t.String())
 	}
@@ -527,7 +527,7 @@ func (c *config) GetUint64Slice(key string) ([]uint64, error) {
 	if err != nil {
 		return []uint64{}, err
 	}
-	t := configer.FieldTypeUintSlice
+	t := configer.FieldTypeIntSlice
 	if field.Type != t {
 		return []uint64{}, errors.New("field type is not " + t.String())
 	}
