@@ -293,7 +293,8 @@ func (c *config) ContainsKey(key string) bool {
 	if err := c.ReloadIfNeeded(); err != nil {
 		return false
 	}
-	return containsKey(c.configMap, key)
+	cfgMap := c.configMap
+	return containsKey(cfgMap, key)
 }
 
 func (c *config) GetString(key string) (string, error) {
@@ -657,7 +658,8 @@ func (c *config) get(key string) (configer.Field, error) {
 	}
 	c.RLock()
 	defer c.RUnlock()
-	return getRecursive(c.configMap, key)
+	cfgMap := c.configMap
+	return getRecursive(cfgMap, key)
 }
 
 func getRecursive(configMap map[string]configer.Field, key string) (configer.Field, error) {
