@@ -86,6 +86,8 @@ type config struct {
 	fileSystem filesystem.FileSystem
 	// configMap config map
 	configMap map[string]configer.Field
+	// deep the section deep
+	deep int
 	// codec codec
 	encoder configer.Encoder
 	decoder configer.Decoder
@@ -277,6 +279,10 @@ func (c *config) NeedReload() (needReloading bool) {
 	})
 	c.RLock()
 	defer c.RUnlock()
+	// if deep has value, don't need reload
+	if c.deep > 0 {
+		return false
+	}
 	needReloading = assignutil.Assign(c.ReloadStrategy.NeedReloading())
 	return
 }
@@ -293,8 +299,7 @@ func (c *config) ContainsKey(key string) bool {
 	if err := c.ReloadIfNeeded(); err != nil {
 		return false
 	}
-	cfgMap := c.configMap
-	return containsKey(cfgMap, key)
+	return containsKey(c.configMap, key)
 }
 
 func (c *config) GetString(key string) (string, error) {
@@ -408,6 +413,7 @@ func (c *config) GetSection(key string) (configer.Configurable, error) {
 		ReloadStrategy: c.ReloadStrategy,
 		fileSystem:     c.fileSystem,
 		configMap:      field.Value.(map[string]configer.Field),
+		deep:           c.deep + 1,
 		encoder:        c.encoder,
 		decoder:        c.decoder,
 	}, nil
@@ -658,8 +664,7 @@ func (c *config) get(key string) (configer.Field, error) {
 	}
 	c.RLock()
 	defer c.RUnlock()
-	cfgMap := c.configMap
-	return getRecursive(cfgMap, key)
+	return getRecursive(c.configMap, key)
 }
 
 func getRecursive(configMap map[string]configer.Field, key string) (configer.Field, error) {
