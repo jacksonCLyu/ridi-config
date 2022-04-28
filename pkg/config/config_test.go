@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/jacksonCLyu/ridi-faces/pkg/configer"
+
 	"github.com/jacksonCLyu/ridi-config/pkg/internal/encoding"
 )
 
@@ -111,6 +113,55 @@ func TestGet(t *testing.T) {
 			if !tt.wantErr {
 				if !reflect.DeepEqual(got, tt.want) {
 					t.Errorf("Get() got = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
+}
+
+func TestGetSection(t *testing.T) {
+	encoding.Init()
+	newConfig, err := NewConfig(WithFilePath("./testdata/test.toml"))
+	if err != nil {
+		t.Errorf("load config failed: %v", err)
+	}
+	type args struct {
+		key string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    configer.Configurable
+		wantErr bool
+	}{
+		{
+			name: "GetSection",
+			args: args{
+				key: "servers",
+			},
+			want:    &config{},
+			wantErr: false,
+		},
+		{
+			name: "GetSection2",
+			args: args{
+				key: "servers.abc",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := newConfig.GetSection(tt.args.key)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetSection() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("GetSection() got = %v, want %v", got, tt.want)
 				}
 			}
 		})

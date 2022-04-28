@@ -401,7 +401,15 @@ func (c *config) GetSection(key string) (configer.Configurable, error) {
 	if field.Type != configer.FieldTypeSection {
 		return nil, errors.New("field type is not Configurable")
 	}
-	return field.Value.(*config), nil
+	return &config{
+		FilePath:       c.FilePath,
+		SourceURL:      c.SourceURL,
+		ReloadStrategy: c.ReloadStrategy,
+		fileSystem:     c.fileSystem,
+		configMap:      field.Value.(map[string]configer.Field),
+		encoder:        c.encoder,
+		decoder:        c.decoder,
+	}, nil
 }
 
 func (c *config) GetInt32(key string) (int32, error) {
