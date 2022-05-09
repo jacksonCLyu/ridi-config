@@ -61,8 +61,7 @@ func DefaultOptions() *options {
 
 func fixPath(path string) string {
 	if strings.HasPrefix(path, "."+string(filepath.Separator)) {
-		rootPath := env.AppRootPath()
-		return strings.Join([]string{rootPath, path[2:]}, string(filepath.Separator))
+		return filepath.Join(env.AppRootPath(), path[2:])
 	}
 	return path
 }
