@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"github.com/jacksonCLyu/ridi-utils/utils/errcheck"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -94,7 +95,12 @@ type config struct {
 }
 
 // NewConfig creates a new configuration
-func NewConfig(opts ...Option) (configer.Configurable, error) {
+func NewConfig(opts ...Option) (configurable configer.Configurable, err error) {
+	defer rescueutil.Recover(func(e any) {
+		if e != nil {
+			err = e.(error)
+		}
+	})
 	options := DefaultOptions()
 	for _, opt := range opts {
 		opt.apply(options)
@@ -115,11 +121,11 @@ func NewConfig(opts ...Option) (configer.Configurable, error) {
 	// give `this` to reloading strategy
 	c.ReloadStrategy.SetConfiguration(c)
 	// auto codec
-	ext := filepath.Ext(c.FilePath)
-	ext = ext[1:]
+	ext := filepath.Ext(c.FilePath)[1:]
 	if !encoding.IsSupport(ext) {
 		if options.encoder == nil && options.decoder == nil {
-			return nil, errors.New("options config `filePath` file ext not support")
+			err = errors.New("options config `filePath` file ext not support and config `encoder` and `decoder` is empty")
+			return
 		}
 		// reset if given custom encoder or decoder
 		if options.encoder != nil {
@@ -128,15 +134,18 @@ func NewConfig(opts ...Option) (configer.Configurable, error) {
 		if options.decoder != nil {
 			c.SetDecoder(options.decoder)
 		}
+	} else {
+		supportCodec := encoding.GetSupport(ext)
+		if supportCodec == nil {
+			err = errors.New("options config `filePath` file ext codec not found")
+			return
+		}
+		c.SetEncoder(supportCodec)
+		c.SetDecoder(supportCodec)
 	}
-	supportCodec := encoding.GetSupport(ext)
-	c.encoder = supportCodec
-	c.decoder = supportCodec
-	err := c.Load(c.FilePath)
-	if err != nil {
-		return nil, err
-	}
-	return c, nil
+	errcheck.CheckAndPanic(c.Load(c.FilePath))
+	configurable = c
+	return
 }
 
 func (c *config) GetEncoder() configer.Encoder {
