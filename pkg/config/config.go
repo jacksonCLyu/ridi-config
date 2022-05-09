@@ -23,6 +23,11 @@ import (
 	"github.com/jacksonCLyu/ridi-config/pkg/internal/strategy"
 )
 
+func init() {
+	// init encoding module
+	encoding.Init()
+}
+
 // Init init config
 func Init(opts ...InitOption) (gErr error) {
 	defer rescueutil.Recover(func(err any) {
@@ -30,7 +35,6 @@ func Init(opts ...InitOption) (gErr error) {
 			gErr = err.(error)
 		}
 	})
-	encoding.Init()
 	initOpts := &initOptions{}
 	for _, opt := range opts {
 		opt.initApply(initOpts)
