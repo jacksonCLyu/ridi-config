@@ -6,8 +6,8 @@ import (
 	"github.com/jacksonCLyu/ridi-faces/pkg/configer"
 )
 
-// DefaultConfig default config for devup
-var DefaultConfig configer.Configurable
+// defaultConfig default config for devup
+var defaultConfig configer.Configurable
 
 // ContainsKey returns true if the key is in the config
 func ContainsKey(key string) bool {

@@ -30,7 +30,7 @@ func init() {
 
 // SetDefaultConfig sets the global default configuration
 func SetDefaultConfig(configurable configer.Configurable) {
-	DefaultConfig = configurable
+	defaultConfig = configurable
 }
 
 // Init init config
@@ -45,9 +45,9 @@ func Init(opts ...InitOption) (gErr error) {
 		opt.initApply(initOpts)
 	}
 	if initOpts.configurable != nil {
-		DefaultConfig = initOpts.configurable
+		defaultConfig = initOpts.configurable
 	} else {
-		DefaultConfig = assignutil.Assign(NewConfig())
+		defaultConfig = assignutil.Assign(NewConfig())
 	}
 	return
 }
@@ -73,10 +73,10 @@ func fixPath(path string) string {
 
 // L returns the global default configuration
 func L() configer.Configurable {
-	if DefaultConfig == nil {
+	if defaultConfig == nil {
 		_ = Init()
 	}
-	return DefaultConfig
+	return defaultConfig
 }
 
 var _ configer.Configurable = (*config)(nil)
