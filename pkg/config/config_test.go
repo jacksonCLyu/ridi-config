@@ -7,6 +7,62 @@ import (
 	"testing"
 )
 
+func TestInit(t *testing.T) {
+	newConfig, err := NewConfig(WithFilePath("./testdata/test.toml"))
+	if err != nil {
+		t.Error(err)
+	}
+	err = Init(WithConfigurable(newConfig))
+	if err != nil {
+		t.Error(err)
+	}
+	type args struct {
+		key string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "containsKey1",
+			args: args{
+				key: "servers",
+			},
+			want: true,
+		},
+		{
+			name: "containsKey2",
+			args: args{
+				key: "servers.alpha",
+			},
+			want: true,
+		},
+		{
+			name: "containsKey3",
+			args: args{
+				key: "servers.ip",
+			},
+			want: false,
+		},
+		{
+			name: "containsKey4",
+			args: args{
+				key: "servers.alpha.ip",
+			},
+			want: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ContainsKey(tt.args.key); got != tt.want {
+				t.Errorf("ContainsKey() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestContainsKey(t *testing.T) {
 	newConfig, err := NewConfig(WithFilePath("./testdata/test.toml"))
 	if err != nil {

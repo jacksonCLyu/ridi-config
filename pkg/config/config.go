@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"github.com/jacksonCLyu/ridi-utils/utils/errcheck"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -16,6 +15,7 @@ import (
 	"github.com/jacksonCLyu/ridi-faces/pkg/configer"
 	"github.com/jacksonCLyu/ridi-faces/pkg/env"
 	"github.com/jacksonCLyu/ridi-utils/utils/assignutil"
+	"github.com/jacksonCLyu/ridi-utils/utils/errcheck"
 	"github.com/jacksonCLyu/ridi-utils/utils/rescueutil"
 
 	"github.com/jacksonCLyu/ridi-config/pkg/internal/encoding"
@@ -26,6 +26,11 @@ import (
 func init() {
 	// init encoding module
 	encoding.Init()
+}
+
+// SetDefaultConfig sets the global default configuration
+func SetDefaultConfig(configurable configer.Configurable) {
+	DefaultConfig = configurable
 }
 
 // Init init config
