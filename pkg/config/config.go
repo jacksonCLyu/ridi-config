@@ -1,10 +1,9 @@
 package config
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -17,6 +16,7 @@ import (
 	"github.com/jacksonCLyu/ridi-utils/utils/assignutil"
 	"github.com/jacksonCLyu/ridi-utils/utils/errcheck"
 	"github.com/jacksonCLyu/ridi-utils/utils/rescueutil"
+	"github.com/pkg/errors"
 
 	"github.com/jacksonCLyu/ridi-config/pkg/internal/encoding"
 	"github.com/jacksonCLyu/ridi-config/pkg/internal/filesystem"
@@ -291,7 +291,7 @@ func (c *config) Reload() error {
 
 func (c *config) NeedReload() (needReloading bool) {
 	defer rescueutil.Recover(func(err any) {
-		fmt.Println(err)
+		log.Printf("config need reloading error: %+v\n", errors.WithStack(err.(error)))
 		needReloading = false
 	})
 	c.RLock()
@@ -314,6 +314,7 @@ func (c *config) SetReloadStrategy(strategy configer.ReloadingStrategy) {
 
 func (c *config) ContainsKey(key string) bool {
 	if err := c.ReloadIfNeeded(); err != nil {
+		log.Printf("config contains key error: %+v\n", errors.WithStack(err))
 		return false
 	}
 	return containsKey(c.configMap, key)
