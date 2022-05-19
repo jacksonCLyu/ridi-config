@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/jacksonCLyu/ridi-faces/pkg/env"
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/jacksonCLyu/ridi-faces/pkg/env"
 )
 
 func TestInit(t *testing.T) {
@@ -320,7 +321,7 @@ func TestGetYaml(t *testing.T) {
 			args: args{
 				key: "database.ports",
 			},
-			want:    []int{8001, 8002},
+			want:    []int64{8001, 8002},
 			wantErr: false,
 		},
 	}
@@ -328,6 +329,108 @@ func TestGetYaml(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := newConfig.Get(tt.args.key)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("Get() got = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
+}
+
+func TestGetIntSlice(t *testing.T) {
+	newConfig, err := NewConfig(WithFilePath("./testdata/test.yaml"))
+	if err != nil {
+		t.Errorf("load config failed: %v", err)
+	}
+	type args struct {
+		key string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    any
+		wantErr bool
+	}{
+		{
+			name: "GetIntSlice",
+			args: args{
+				key: "database.ports",
+			},
+			want:    []int{8001, 8002},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := newConfig.GetIntSlice(tt.args.key)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("Get() got = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
+
+	tests2 := []struct {
+		name    string
+		args    args
+		want    any
+		wantErr bool
+	}{
+		{
+			name: "GetInt32Slice",
+			args: args{
+				key: "database.ports",
+			},
+			want:    []int32{8001, 8002},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests2 {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := newConfig.GetInt32Slice(tt.args.key)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				if !reflect.DeepEqual(got, tt.want) {
+					t.Errorf("Get() got = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
+
+	tests3 := []struct {
+		name    string
+		args    args
+		want    any
+		wantErr bool
+	}{
+		{
+			name: "GetInt64Slice",
+			args: args{
+				key: "database.ports",
+			},
+			want:    []int64{8001, 8002},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests3 {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := newConfig.GetInt64Slice(tt.args.key)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Get() error = %v, wantErr %v", err, tt.wantErr)
 				return
