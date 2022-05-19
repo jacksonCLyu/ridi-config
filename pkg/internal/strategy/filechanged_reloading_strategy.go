@@ -10,7 +10,7 @@ import (
 )
 
 // DefaultTriggerInterval default reloading tirgger interval
-const DefaultTriggerInterval = 5000 * time.Millisecond
+const DefaultTriggerInterval = 5000
 
 // DefaultFileChangedReloadingStrategy is a strategy that reloads the configuration
 var DefaultFileChangedReloadingStrategy = NewFileChangedReloadingStrategy()
@@ -18,9 +18,9 @@ var DefaultFileChangedReloadingStrategy = NewFileChangedReloadingStrategy()
 // FileChangedReloadingStrategy file change reloading strategy
 type FileChangedReloadingStrategy struct {
 	configuration   configer.FileConfiguration
-	lastModified    time.Duration
-	lastChecked     time.Duration
-	triggerInterval time.Duration
+	lastModified    int64
+	lastChecked     int64
+	triggerInterval int64
 	reloading       bool
 }
 
@@ -59,8 +59,8 @@ func (s *FileChangedReloadingStrategy) Init() error {
 func (s *FileChangedReloadingStrategy) NeedReloading() (bool, error) {
 	if !s.reloading {
 		now := time.Now().Local().UnixMilli()
-		if now > s.lastChecked.Milliseconds()+s.triggerInterval.Milliseconds() {
-			s.lastChecked = time.Duration(now)
+		if now > s.lastChecked+s.triggerInterval {
+			s.lastChecked = now
 			var err error
 			if s.reloading, err = s.hasChanged(); err != nil {
 				return s.reloading, err
@@ -91,7 +91,7 @@ func (s *FileChangedReloadingStrategy) updateLastModified() error {
 		return gErr
 	}
 	modTime := fileInfo.ModTime()
-	s.lastModified = time.Duration(modTime.Local().UnixMilli())
+	s.lastModified = modTime.Local().UnixMilli()
 	return gErr
 }
 
@@ -123,5 +123,7 @@ func (s *FileChangedReloadingStrategy) hasChanged() (bool, error) {
 		return false, gErr
 	}
 	modTime := fileInfo.ModTime()
-	return modTime.Local().UnixMilli() > s.lastModified.Milliseconds(), nil
+	currentModMili := modTime.Local().UnixMilli()
+	lastModMili := s.lastModified
+	return currentModMili > lastModMili, nil
 }

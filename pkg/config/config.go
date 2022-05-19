@@ -128,6 +128,7 @@ func NewConfig(opts ...Option) (configurable configer.Configurable, err error) {
 	}
 	// give `this` to reloading strategy
 	c.ReloadStrategy.SetConfiguration(c)
+	c.ReloadStrategy.Init()
 	// auto codec
 	ext := filepath.Ext(c.FilePath)[1:]
 	if !encoding.IsSupport(ext) {
@@ -282,6 +283,7 @@ func (c *config) ReloadIfNeeded() error {
 }
 
 func (c *config) Reload() error {
+	defer c.ReloadStrategy.ReloadingPerformed()
 	reader, err := c.fileSystem.GetReader(c.FilePath)
 	if err != nil {
 		return err

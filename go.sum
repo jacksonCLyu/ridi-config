@@ -4,6 +4,12 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/jacksonCLyu/ridi-faces v1.6.7 h1:RmfKvza0HB4ZLaiDvwCtBvkX5YsFKB1dUmVzPRpvF5A=
 github.com/jacksonCLyu/ridi-faces v1.6.7/go.mod h1:JEO+0FKa+9EBEcRJ1tfctyAn2wkUrlph/kI6yx4/XRE=
+github.com/jacksonCLyu/ridi-faces v1.6.8 h1:C2sQHqqbDK0p3lnSnRdeq0CGSqLWStXOW6EUEnsfVxg=
+github.com/jacksonCLyu/ridi-faces v1.6.8/go.mod h1:JEO+0FKa+9EBEcRJ1tfctyAn2wkUrlph/kI6yx4/XRE=
+github.com/jacksonCLyu/ridi-faces v1.6.9 h1:XfOzapM8pA6TGT5rLk5hZ7PnBrA9XwIj/Pxdi9ZDDkE=
+github.com/jacksonCLyu/ridi-faces v1.6.9/go.mod h1:JEO+0FKa+9EBEcRJ1tfctyAn2wkUrlph/kI6yx4/XRE=
+github.com/jacksonCLyu/ridi-faces v1.7.0 h1:OatS/G652QTWBGL2gNlr6iqQ2oN+sgGgxPP7L5cSxog=
+github.com/jacksonCLyu/ridi-faces v1.7.0/go.mod h1:JEO+0FKa+9EBEcRJ1tfctyAn2wkUrlph/kI6yx4/XRE=
 github.com/jacksonCLyu/ridi-utils v1.1.0 h1:KOv7N8K6Vkpz5+emLo04rQm6BhsARcZ3D1XatlgJTqM=
 github.com/jacksonCLyu/ridi-utils v1.1.0/go.mod h1:qV0O4YOJm/HyKDBwJ/EVQrp52QMeTcRCT/4DI9nux+Y=
 github.com/jacksonCLyu/ridi-utils v1.1.6 h1:6ba0RPW6c103S+kWjrvWCxZHWsTp7skjvZgx1Tl04Y4=

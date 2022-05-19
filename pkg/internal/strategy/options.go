@@ -1,14 +1,12 @@
 package strategy
 
 import (
-	"time"
-
 	"github.com/jacksonCLyu/ridi-faces/pkg/configer"
 )
 
 type fileChangedReloadingOptions struct {
 	fileConfiguration configer.FileConfiguration
-	triggerInterval   time.Duration
+	triggerInterval   int64
 }
 
 type managedReloadingOptions struct {
@@ -31,7 +29,7 @@ func WithFileConfiguration(configuration configer.FileConfiguration) FileChanged
 }
 
 // WithTriggerInterval sets the trigger interval
-func WithTriggerInterval(triggerInterval time.Duration) FileChangedReloadingOption {
+func WithTriggerInterval(triggerInterval int64) FileChangedReloadingOption {
 	return triggerIntervalOption(triggerInterval)
 }
 
@@ -56,8 +54,8 @@ func (o fileChangedConfigurationOption) apply(opts *fileChangedReloadingOptions)
 	opts.fileConfiguration = o.configuration
 }
 
-type triggerIntervalOption time.Duration
+type triggerIntervalOption int64
 
 func (o triggerIntervalOption) apply(opts *fileChangedReloadingOptions) {
-	opts.triggerInterval = time.Duration(o)
+	opts.triggerInterval = int64(o)
 }

@@ -315,6 +315,14 @@ func TestGetYaml(t *testing.T) {
 			want:    5000,
 			wantErr: false,
 		},
+		{
+			name: "GetSlice1",
+			args: args{
+				key: "database.ports",
+			},
+			want:    []int{8001, 8002},
+			wantErr: false,
+		},
 	}
 
 	for _, tt := range tests {
