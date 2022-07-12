@@ -303,6 +303,9 @@ func (c *config) ContainsKey(key string) bool {
 }
 
 func (c *config) GetString(key string) (string, error) {
+	if !ContainsKey(key) {
+		return "", nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return "", err
@@ -315,7 +318,9 @@ func (c *config) GetString(key string) (string, error) {
 }
 
 func (c *config) GetInt(key string) (int, error) {
-
+	if !ContainsKey(key) {
+		return 0, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return 0, err
@@ -327,7 +332,9 @@ func (c *config) GetInt(key string) (int, error) {
 }
 
 func (c *config) GetBool(key string) (bool, error) {
-
+	if !ContainsKey(key) {
+		return false, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return false, err
@@ -339,19 +346,23 @@ func (c *config) GetBool(key string) (bool, error) {
 }
 
 func (c *config) GetFloat64(key string) (float64, error) {
-
+	if !ContainsKey(key) {
+		return float64(0), nil
+	}
 	field, err := c.get(key)
 	if err != nil {
-		return 0.0, err
+		return float64(0), err
 	}
 	if field.Type != configer.FieldTypeFloat {
-		return 0.0, errors.New("field type is not float64")
+		return float64(0), errors.New("field type is not float64")
 	}
 	return field.Value.(float64), nil
 }
 
 func (c *config) GetStringSlice(key string) ([]string, error) {
-
+	if !ContainsKey(key) {
+		return []string{}, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return []string{}, err
@@ -363,7 +374,9 @@ func (c *config) GetStringSlice(key string) ([]string, error) {
 }
 
 func (c *config) GetIntSlice(key string) ([]int, error) {
-
+	if !ContainsKey(key) {
+		return []int{}, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return []int{}, err
@@ -375,7 +388,9 @@ func (c *config) GetIntSlice(key string) ([]int, error) {
 }
 
 func (c *config) GetBoolSlice(key string) ([]bool, error) {
-
+	if !ContainsKey(key) {
+		return []bool{}, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return []bool{}, err
@@ -387,7 +402,9 @@ func (c *config) GetBoolSlice(key string) ([]bool, error) {
 }
 
 func (c *config) GetFloat64Slice(key string) ([]float64, error) {
-
+	if !ContainsKey(key) {
+		return []float64{}, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return []float64{}, err
@@ -420,20 +437,24 @@ func (c *config) GetSection(key string) (configer.Configurable, error) {
 }
 
 func (c *config) GetInt32(key string) (int32, error) {
-
+	if !ContainsKey(key) {
+		return int32(0), nil
+	}
 	field, err := c.get(key)
 	if err != nil {
-		return 0, err
+		return int32(0), err
 	}
 	t := configer.FieldTypeInt
 	if field.Type != t {
-		return 0, errors.New("field type is not " + t.String())
+		return int32(0), errors.New("field type is not " + t.String())
 	}
 	return int32(field.Value.(int)), nil
 }
 
 func (c *config) GetInt32Slice(key string) ([]int32, error) {
-
+	if !ContainsKey(key) {
+		return []int32{}, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return []int32{}, err
@@ -451,20 +472,24 @@ func (c *config) GetInt32Slice(key string) ([]int32, error) {
 }
 
 func (c *config) GetInt64(key string) (int64, error) {
-
+	if !ContainsKey(key) {
+		return int64(0), nil
+	}
 	field, err := c.get(key)
 	if err != nil {
-		return 0, err
+		return int64(0), err
 	}
 	t := configer.FieldTypeInt
 	if field.Type != t {
-		return 0, errors.New("field type is not " + t.String())
+		return int64(0), errors.New("field type is not " + t.String())
 	}
 	return int64(field.Value.(int)), nil
 }
 
 func (c *config) GetInt64Slice(key string) ([]int64, error) {
-
+	if !ContainsKey(key) {
+		return []int64{}, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return []int64{}, err
@@ -482,20 +507,24 @@ func (c *config) GetInt64Slice(key string) ([]int64, error) {
 }
 
 func (c *config) GetUint(key string) (uint, error) {
-
+	if !ContainsKey(key) {
+		return uint(0), nil
+	}
 	field, err := c.get(key)
 	if err != nil {
-		return 0, err
+		return uint(0), err
 	}
 	t := configer.FieldTypeInt
 	if field.Type != t {
-		return 0, errors.New("field type is not " + t.String())
+		return uint(0), errors.New("field type is not " + t.String())
 	}
 	return uint(field.Value.(int)), nil
 }
 
 func (c *config) GetUintSlice(key string) ([]uint, error) {
-
+	if !ContainsKey(key) {
+		return []uint{}, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return []uint{}, err
@@ -513,20 +542,24 @@ func (c *config) GetUintSlice(key string) ([]uint, error) {
 }
 
 func (c *config) GetUint32(key string) (uint32, error) {
-
+	if !ContainsKey(key) {
+		return uint32(0), nil
+	}
 	field, err := c.get(key)
 	if err != nil {
-		return 0, err
+		return uint32(0), err
 	}
 	t := configer.FieldTypeInt
 	if field.Type != t {
-		return 0, errors.New("field type is not " + t.String())
+		return uint32(0), errors.New("field type is not " + t.String())
 	}
 	return uint32(field.Value.(int)), nil
 }
 
 func (c *config) GetUint32Slice(key string) ([]uint32, error) {
-
+	if !ContainsKey(key) {
+		return []uint32{}, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return []uint32{}, err
@@ -544,20 +577,24 @@ func (c *config) GetUint32Slice(key string) ([]uint32, error) {
 }
 
 func (c *config) GetUint64(key string) (uint64, error) {
-
+	if !ContainsKey(key) {
+		return uint64(0), nil
+	}
 	field, err := c.get(key)
 	if err != nil {
-		return 0, err
+		return uint64(0), err
 	}
 	t := configer.FieldTypeInt
 	if field.Type != t {
-		return 0, errors.New("field type is not " + t.String())
+		return uint64(0), errors.New("field type is not " + t.String())
 	}
 	return uint64(field.Value.(int)), nil
 }
 
 func (c *config) GetUint64Slice(key string) ([]uint64, error) {
-
+	if !ContainsKey(key) {
+		return []uint64{}, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return []uint64{}, err
@@ -575,20 +612,24 @@ func (c *config) GetUint64Slice(key string) ([]uint64, error) {
 }
 
 func (c *config) GetFloat32(key string) (float32, error) {
-
+	if !ContainsKey(key) {
+		return float32(0), nil
+	}
 	field, err := c.get(key)
 	if err != nil {
-		return 0.0, err
+		return float32(0), err
 	}
 	t := configer.FieldTypeFloat
 	if field.Type != t {
-		return 0.0, errors.New("field type is not " + t.String())
+		return float32(0), errors.New("field type is not " + t.String())
 	}
 	return field.Value.(float32), nil
 }
 
 func (c *config) GetFloat32Slice(key string) ([]float32, error) {
-
+	if !ContainsKey(key) {
+		return []float32{}, nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return []float32{}, err
@@ -601,20 +642,24 @@ func (c *config) GetFloat32Slice(key string) ([]float32, error) {
 }
 
 func (c *config) GetDuration(key string) (time.Duration, error) {
-
+	if !ContainsKey(key) {
+		return time.Duration(0), nil
+	}
 	field, err := c.get(key)
 	if err != nil {
-		return 0, err
+		return time.Duration(0), err
 	}
 	t := configer.FieldTypeDuration
 	if field.Type != t {
-		return 0, errors.New("field type is not " + t.String())
+		return time.Duration(0), errors.New("field type is not " + t.String())
 	}
 	return field.Value.(time.Duration), nil
 }
 
 func (c *config) GetTime(key string) (time.Time, error) {
-
+	if !ContainsKey(key) {
+		return time.Now().Local(), nil
+	}
 	field, err := c.get(key)
 	if err != nil {
 		return time.Now().Local(), err
@@ -627,7 +672,6 @@ func (c *config) GetTime(key string) (time.Time, error) {
 }
 
 func (c *config) Get(key string) (any, error) {
-
 	field, err := c.get(key)
 	if err != nil {
 		return nil, err
