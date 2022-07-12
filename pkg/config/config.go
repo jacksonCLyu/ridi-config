@@ -1,10 +1,9 @@
 package config
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -15,12 +14,24 @@ import (
 	"github.com/jacksonCLyu/ridi-faces/pkg/configer"
 	"github.com/jacksonCLyu/ridi-faces/pkg/env"
 	"github.com/jacksonCLyu/ridi-utils/utils/assignutil"
+	"github.com/jacksonCLyu/ridi-utils/utils/errcheck"
 	"github.com/jacksonCLyu/ridi-utils/utils/rescueutil"
+	"github.com/pkg/errors"
 
 	"github.com/jacksonCLyu/ridi-config/pkg/internal/encoding"
 	"github.com/jacksonCLyu/ridi-config/pkg/internal/filesystem"
 	"github.com/jacksonCLyu/ridi-config/pkg/internal/strategy"
 )
+
+func init() {
+	// init encoding module
+	encoding.Init()
+}
+
+// SetDefaultConfig sets the global default configuration
+func SetDefaultConfig(configurable configer.Configurable) {
+	defaultConfig = configurable
+}
 
 // Init init config
 func Init(opts ...InitOption) (gErr error) {
@@ -29,15 +40,14 @@ func Init(opts ...InitOption) (gErr error) {
 			gErr = err.(error)
 		}
 	})
-	encoding.Init()
 	initOpts := &initOptions{}
 	for _, opt := range opts {
 		opt.initApply(initOpts)
 	}
 	if initOpts.configurable != nil {
-		DefaultConfig = initOpts.configurable
+		defaultConfig = initOpts.configurable
 	} else {
-		DefaultConfig = assignutil.Assign(NewConfig())
+		defaultConfig = assignutil.Assign(NewConfig())
 	}
 	return
 }
@@ -56,18 +66,17 @@ func DefaultOptions() *options {
 
 func fixPath(path string) string {
 	if strings.HasPrefix(path, "."+string(filepath.Separator)) {
-		rootPath := env.AppRootPath()
-		return strings.Join([]string{rootPath, path[2:]}, string(filepath.Separator))
+		return filepath.Join(env.AppRootPath(), path[2:])
 	}
 	return path
 }
 
 // L returns the global default configuration
 func L() configer.Configurable {
-	if DefaultConfig == nil {
+	if defaultConfig == nil {
 		_ = Init()
 	}
-	return DefaultConfig
+	return defaultConfig
 }
 
 var _ configer.Configurable = (*config)(nil)
@@ -94,7 +103,12 @@ type config struct {
 }
 
 // NewConfig creates a new configuration
-func NewConfig(opts ...Option) (configer.Configurable, error) {
+func NewConfig(opts ...Option) (configurable configer.Configurable, err error) {
+	defer rescueutil.Recover(func(e any) {
+		if e != nil {
+			err = e.(error)
+		}
+	})
 	options := DefaultOptions()
 	for _, opt := range opts {
 		opt.apply(options)
@@ -114,12 +128,13 @@ func NewConfig(opts ...Option) (configer.Configurable, error) {
 	}
 	// give `this` to reloading strategy
 	c.ReloadStrategy.SetConfiguration(c)
+	c.ReloadStrategy.Init()
 	// auto codec
-	ext := filepath.Ext(c.FilePath)
-	ext = ext[1:]
+	ext := filepath.Ext(c.FilePath)[1:]
 	if !encoding.IsSupport(ext) {
 		if options.encoder == nil && options.decoder == nil {
-			return nil, errors.New("options config `filePath` file ext not support")
+			err = errors.New("options config `filePath` file ext not support and config `encoder` and `decoder` is empty")
+			return
 		}
 		// reset if given custom encoder or decoder
 		if options.encoder != nil {
@@ -128,15 +143,18 @@ func NewConfig(opts ...Option) (configer.Configurable, error) {
 		if options.decoder != nil {
 			c.SetDecoder(options.decoder)
 		}
+	} else {
+		supportCodec := encoding.GetSupport(ext)
+		if supportCodec == nil {
+			err = errors.New("options config `filePath` file ext codec not found")
+			return
+		}
+		c.SetEncoder(supportCodec)
+		c.SetDecoder(supportCodec)
 	}
-	supportCodec := encoding.GetSupport(ext)
-	c.encoder = supportCodec
-	c.decoder = supportCodec
-	err := c.Load(c.FilePath)
-	if err != nil {
-		return nil, err
-	}
-	return c, nil
+	errcheck.CheckAndPanic(c.Load(c.FilePath))
+	configurable = c
+	return
 }
 
 func (c *config) GetEncoder() configer.Encoder {
@@ -265,6 +283,7 @@ func (c *config) ReloadIfNeeded() error {
 }
 
 func (c *config) Reload() error {
+	defer c.ReloadStrategy.ReloadingPerformed()
 	reader, err := c.fileSystem.GetReader(c.FilePath)
 	if err != nil {
 		return err
@@ -274,7 +293,7 @@ func (c *config) Reload() error {
 
 func (c *config) NeedReload() (needReloading bool) {
 	defer rescueutil.Recover(func(err any) {
-		fmt.Println(err)
+		log.Printf("config need reloading error: %+v\n", errors.WithStack(err.(error)))
 		needReloading = false
 	})
 	c.RLock()
@@ -297,6 +316,7 @@ func (c *config) SetReloadStrategy(strategy configer.ReloadingStrategy) {
 
 func (c *config) ContainsKey(key string) bool {
 	if err := c.ReloadIfNeeded(); err != nil {
+		log.Printf("config contains key error: %+v\n", errors.WithStack(err))
 		return false
 	}
 	return containsKey(c.configMap, key)
@@ -328,7 +348,7 @@ func (c *config) GetInt(key string) (int, error) {
 	if field.Type != configer.FieldTypeInt {
 		return 0, errors.New("field type is not int")
 	}
-	return field.Value.(int), nil
+	return int(field.Value.(int64)), nil
 }
 
 func (c *config) GetBool(key string) (bool, error) {
@@ -384,7 +404,12 @@ func (c *config) GetIntSlice(key string) ([]int, error) {
 	if field.Type != configer.FieldTypeIntSlice {
 		return []int{}, errors.New("field type is not int slice")
 	}
-	return field.Value.([]int), nil
+	fv := field.Value.([]int64)
+	r := make([]int, len(fv))
+	for i, v := range fv {
+		r[i] = int(v)
+	}
+	return r, nil
 }
 
 func (c *config) GetBoolSlice(key string) ([]bool, error) {
@@ -448,7 +473,7 @@ func (c *config) GetInt32(key string) (int32, error) {
 	if field.Type != t {
 		return int32(0), errors.New("field type is not " + t.String())
 	}
-	return int32(field.Value.(int)), nil
+	return int32(field.Value.(int64)), nil
 }
 
 func (c *config) GetInt32Slice(key string) ([]int32, error) {
@@ -463,7 +488,7 @@ func (c *config) GetInt32Slice(key string) ([]int32, error) {
 	if field.Type != t {
 		return []int32{}, errors.New("field type is not " + t.String())
 	}
-	v := field.Value.([]int)
+	v := field.Value.([]int64)
 	r := make([]int32, len(v))
 	for i, v := range v {
 		r[i] = int32(v)
@@ -483,7 +508,7 @@ func (c *config) GetInt64(key string) (int64, error) {
 	if field.Type != t {
 		return int64(0), errors.New("field type is not " + t.String())
 	}
-	return int64(field.Value.(int)), nil
+	return field.Value.(int64), nil
 }
 
 func (c *config) GetInt64Slice(key string) ([]int64, error) {
@@ -498,12 +523,7 @@ func (c *config) GetInt64Slice(key string) ([]int64, error) {
 	if field.Type != t {
 		return []int64{}, errors.New("field type is not " + t.String())
 	}
-	v := field.Value.([]int)
-	r := make([]int64, len(v))
-	for i, v := range v {
-		r[i] = int64(v)
-	}
-	return r, nil
+	return field.Value.([]int64), nil
 }
 
 func (c *config) GetUint(key string) (uint, error) {
@@ -518,7 +538,7 @@ func (c *config) GetUint(key string) (uint, error) {
 	if field.Type != t {
 		return uint(0), errors.New("field type is not " + t.String())
 	}
-	return uint(field.Value.(int)), nil
+	return uint(field.Value.(int64)), nil
 }
 
 func (c *config) GetUintSlice(key string) ([]uint, error) {
@@ -533,7 +553,7 @@ func (c *config) GetUintSlice(key string) ([]uint, error) {
 	if field.Type != t {
 		return []uint{}, errors.New("field type is not " + t.String())
 	}
-	v := field.Value.([]int)
+	v := field.Value.([]int64)
 	r := make([]uint, len(v))
 	for i, v := range v {
 		r[i] = uint(v)
@@ -553,7 +573,7 @@ func (c *config) GetUint32(key string) (uint32, error) {
 	if field.Type != t {
 		return uint32(0), errors.New("field type is not " + t.String())
 	}
-	return uint32(field.Value.(int)), nil
+	return uint32(field.Value.(int64)), nil
 }
 
 func (c *config) GetUint32Slice(key string) ([]uint32, error) {
@@ -568,7 +588,7 @@ func (c *config) GetUint32Slice(key string) ([]uint32, error) {
 	if field.Type != t {
 		return []uint32{}, errors.New("field type is not " + t.String())
 	}
-	v := field.Value.([]int)
+	v := field.Value.([]int64)
 	r := make([]uint32, len(v))
 	for i, v := range v {
 		r[i] = uint32(v)
@@ -588,7 +608,7 @@ func (c *config) GetUint64(key string) (uint64, error) {
 	if field.Type != t {
 		return uint64(0), errors.New("field type is not " + t.String())
 	}
-	return uint64(field.Value.(int)), nil
+	return uint64(field.Value.(int64)), nil
 }
 
 func (c *config) GetUint64Slice(key string) ([]uint64, error) {
@@ -603,7 +623,7 @@ func (c *config) GetUint64Slice(key string) ([]uint64, error) {
 	if field.Type != t {
 		return []uint64{}, errors.New("field type is not " + t.String())
 	}
-	v := field.Value.([]int)
+	v := field.Value.([]int64)
 	r := make([]uint64, len(v))
 	for i, v := range v {
 		r[i] = uint64(v)
@@ -623,7 +643,7 @@ func (c *config) GetFloat32(key string) (float32, error) {
 	if field.Type != t {
 		return float32(0), errors.New("field type is not " + t.String())
 	}
-	return field.Value.(float32), nil
+	return float32(field.Value.(float64)), nil
 }
 
 func (c *config) GetFloat32Slice(key string) ([]float32, error) {
@@ -638,7 +658,12 @@ func (c *config) GetFloat32Slice(key string) ([]float32, error) {
 	if field.Type != t {
 		return []float32{}, errors.New("field type is not " + t.String())
 	}
-	return field.Value.([]float32), nil
+	v := field.Value.([]float64)
+	r := make([]float32, len(v))
+	for i, v := range v {
+		r[i] = float32(v)
+	}
+	return r, nil
 }
 
 func (c *config) GetDuration(key string) (time.Duration, error) {
